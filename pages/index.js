@@ -3,6 +3,8 @@ import Head from 'next/head';
 
 export default function ManutencaoModelaco() {
   const [tab, setTab] = useState('dash');
+  
+  // Estado de Peças / Estoque
   const [pecas, setPecas] = useState([
     { id: 1, nome: 'Kit Guidão Drag Bar 22mm', codigo: 'PEC-089', qtd: 12 },
     { id: 2, nome: 'Óleo Hidráulico ISO VG 68', codigo: 'PEC-012', qtd: 45 }
@@ -10,6 +12,15 @@ export default function ManutencaoModelaco() {
   const [nomePeca, setNomePeca] = useState('');
   const [qtdPeca, setQtdPeca] = useState('');
 
+  // Estado de Agenda / Programação de Manutenção
+  const [agendamentos, setAgendamentos] = useState([
+    { id: 1, maquina: 'Torno CNC Romi Centur', tipo: 'Preventiva', status: 'Hoje' },
+    { id: 2, maquina: 'Prensa Hidráulica 150T', tipo: 'Preditiva', status: 'Amanhã' }
+  ]);
+  const [maquinaNome, setMaquinaNome] = useState('');
+  const [tipoIntervencao, setTipoIntervencao] = useState('Preventiva');
+
+  // Adicionar Peça
   const adicionarPeca = (e) => {
     e.preventDefault();
     if (!nomePeca || !qtdPeca) return;
@@ -22,21 +33,44 @@ export default function ManutencaoModelaco() {
     setPecas([nova, ...pecas]);
     setNomePeca('');
     setQtdPeca('');
+    alert('Peça cadastrada com sucesso no estoque!');
+  };
+
+  // Agendar Serviço / Programação
+  const adicionarAgendamento = (e) => {
+    e.preventDefault();
+    if (!maquinaNome) {
+      alert('Por favor, informe o nome da máquina ou equipamento.');
+      return;
+    }
+    const novoServico = {
+      id: Date.now(),
+      maquina: maquinaNome,
+      tipo: tipoIntervencao,
+      status: 'Pendente'
+    };
+    setAgendamentos([novoServico, ...agendamentos]);
+    setMaquinaNome('');
+    alert('Serviço programado com sucesso!');
+    setTab('dash'); // Retorna para o dashboard para ver a programação atualizada
   };
 
   return (
-    <div style={{ backgroundColor: '#121212', color: '#f3f4f6', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', maxWidth: '480px', margin: '0 auto', paddingBottom: '80px' }}>
+    <div style={{ backgroundColor: '#121212', color: '#f3f4f6', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', maxWidth: '480px', margin: '0 auto', paddingBottom: '90px' }}>
       <Head>
         <title>Manutenção Modelaço - CMMS</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
+      {/* HEADER NO PADRÃO VANGUARDA */}
       <header style={{ padding: '24px 20px 16px', background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 100%)', borderBottom: '1px solid #2a2a2a' }}>
         <h1 style={{ color: '#d97706', fontSize: '20px', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Manutenção Modelaço</h1>
         <p style={{ fontSize: '12px', color: '#9ca3af', margin: '2px 0 0 0' }}>Engenharia de Manutenção & Ativos</p>
       </header>
 
       <main style={{ padding: '20px' }}>
+        
+        {/* ABA 1: DASHBOARD & INDICADORES */}
         {tab === 'dash' && (
           <div>
             <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>Indicadores de Confiabilidade</h2>
@@ -59,27 +93,28 @@ export default function ManutencaoModelaco() {
               </div>
             </div>
 
-            <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>Programação Recente</h2>
-            <div style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '16px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>Troca de Rolamento ROL-6204</h4>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#9ca3af' }}>Torno CNC Romi • Preventiva</p>
-              </div>
-              <span style={{ backgroundColor: '#27272a', color: '#d97706', fontSize: '12px', fontWeight: '700', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(217, 119, 6, 0.2)' }}>HOJE</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', margin: 0, letterSpacing: '0.5px' }}>Programação Ativa</h2>
+              <button onClick={() => setTab('prog')} style={{ background: 'none', border: 'none', color: '#d97706', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>+ Agendar Novo</button>
             </div>
-            <div style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '16px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>Inspeção de Vedações Gaxeta</h4>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#9ca3af' }}>Prensa Hidráulica 150T • Preditiva</p>
+
+            {agendamentos.map((item) => (
+              <div key={item.id} style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '16px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>{item.maquina}</h4>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#9ca3af' }}>Tipo: {item.tipo}</p>
+                </div>
+                <span style={{ backgroundColor: '#27272a', color: '#d97706', fontSize: '12px', fontWeight: '700', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(217, 119, 6, 0.2)' }}>{item.status}</span>
               </div>
-              <span style={{ backgroundColor: '#27272a', color: '#d97706', fontSize: '12px', fontWeight: '700', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(217, 119, 6, 0.2)' }}>AMANHÃ</span>
-            </div>
+            ))}
           </div>
         )}
 
+        {/* ABA 2: PEÇAS & ESTOQUE */}
         {tab === 'pecas' && (
           <div>
-            <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>Incluir Peça / Item (Celular)</h2>
+            <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>Incluir Peça / Item</h2>
+            
             <form onSubmit={adicionarPeca} style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '18px', marginBottom: '24px' }}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '12px', color: '#9ca3af', marginBottom: '6px', fontWeight: '600' }}>Nome do Item / Peça</label>
@@ -105,28 +140,31 @@ export default function ManutencaoModelaco() {
           </div>
         )}
 
+        {/* ABA 3: PROGRAMAÇÃO / AGENDA */}
         {tab === 'prog' && (
           <div>
             <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>Programar Manutenção</h2>
-            <div style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '18px' }}>
+            
+            <form onSubmit={adicionarAgendamento} style={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '14px', padding: '18px' }}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '12px', color: '#9ca3af', marginBottom: '6px', fontWeight: '600' }}>Equipamento / Máquina</label>
-                <input type="text" placeholder="Ex: Torno CNC Romi Centur 20RV" style={{ width: '100%', backgroundColor: '#121212', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', color: '#f3f4f6', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                <input type="text" value={maquinaNome} onChange={(e) => setMaquinaNome(e.target.value)} placeholder="Ex: Torno CNC Romi Centur 20RV" style={{ width: '100%', backgroundColor: '#121212', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', color: '#f3f4f6', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '12px', color: '#9ca3af', marginBottom: '6px', fontWeight: '600' }}>Tipo de Intervenção</label>
-                <select style={{ width: '100%', backgroundColor: '#121212', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', color: '#f3f4f6', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                  <option>Preventiva</option>
-                  <option>Corretiva</option>
-                  <option>Preditiva / Inspeção</option>
+                <select value={tipoIntervencao} onChange={(e) => setTipoIntervencao(e.target.value)} style={{ width: '100%', backgroundColor: '#121212', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', color: '#f3f4f6', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                  <option value="Preventiva">Preventiva</option>
+                  <option value="Corretiva">Corretiva</option>
+                  <option value="Preditiva / Inspeção">Preditiva / Inspeção</option>
                 </select>
               </div>
-              <button style={{ width: '100%', backgroundColor: '#d97706', color: '#000', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Agendar Serviço</button>
-            </div>
+              <button type="submit" style={{ width: '100%', backgroundColor: '#d97706', color: '#000', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Agendar Serviço</button>
+            </form>
           </div>
         )}
       </main>
 
+      {/* BARRA DE NAVEGAÇÃO INFERIOR FIXA */}
       <nav style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', backgroundColor: '#161616', borderTop: '1px solid #2a2a2a', display: 'flex', justifyContent: 'space-around', padding: '10px 0', zIndex: 100 }}>
         <button onClick={() => setTab('dash')} style={{ background: 'none', border: 'none', color: tab === 'dash' ? '#d97706' : '#9ca3af', fontSize: '11px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', width: '33%', fontWeight: tab === 'dash' ? '700' : 'normal' }}>
           <span style={{ fontSize: '18px' }}>📊</span>
@@ -144,3 +182,6 @@ export default function ManutencaoModelaco() {
     </div>
   );
 }
+
+
+    
